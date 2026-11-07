@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ms"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALI: HAND HERO – TEMBAK JAWAPAN!</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<style>
+*{box-sizing:border-box;margin:0;user-select:none}
+html,body{height:100%;background:#0b1d4d;overflow:hidden;font-family:"Baloo 2","Chalkboard SE","Comic Sans MS","Trebuchet MS",sans-serif;cursor:none}
+#wrap{height:100%;display:grid;place-items:center}
+#stage{container-type:size;position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;overflow:hidden;perspective:120cqw;
+ background:linear-gradient(#52c7ff 0%,#a8e8ff 55%,#fff6c9 62%);color:#16306b}
+#stage:before{content:"";position:absolute;left:-10%;right:-10%;bottom:-12cqw;height:30cqw;border-radius:50% 50% 0 0;background:radial-gradient(circle at 30% 0,#7ae25f,#38b84a 70%);box-shadow:0 -1cqw 0 #a4f07c inset}
+#sun{position:absolute;right:8cqw;top:3cqw;width:9cqw;height:9cqw;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff8b0,#ffd23f);box-shadow:0 0 4cqw #ffe26b;animation:spin 20s linear infinite}
+.cl{position:absolute;width:12cqw;height:4cqw;background:#fff;border-radius:4cqw;box-shadow:3cqw -1.5cqw 0 1cqw #fff,6cqw .5cqw 0 0 #fff;opacity:.9;animation:drift 40s linear infinite}
+@keyframes drift{from{left:-20cqw}to{left:110cqw}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.scr.on{display:flex}
+h1{font-size:6.4cqw;line-height:.95;color:#fff;-webkit-text-stroke:.35cqw #1c3fa8;paint-order:stroke fill;text-shadow:0 .8cqw 0 #1c3fa8,0 1.4cqw 2cqw rgba(0,0,0,.3);transform:rotateX(14deg) rotateZ(-2deg)}
+h1 em{font-style:normal;color:#ffd23f}
+h2{font-size:4cqw;color:#fff;-webkit-text-stroke:.25cqw #1c3fa8;paint-order:stroke fill;text-shadow:0 .5cqw 0 #1c3fa8}
+.btn{font:inherit;font-weight:800;font-size:2.8cqw;padding:.8cqw 3.4cqw;margin:.8cqw;border:0;border-radius:4cqw;color:#fff;background:linear-gradient(#ff7a59,#e8362f);box-shadow:0 .7cqw 0 #a31d1d,0 1.2cqw 2cqw rgba(0,0,0,.3);cursor:none;transition:transform .15s}
+.btn:hover{transform:translateY(-.3cqw) scale(1.05)}.btn.b{background:linear-gradient(#4fb3ff,#2a6df0);box-shadow:0 .7cqw 0 #1a3fa0,0 1.2cqw 2cqw rgba(0,0,0,.3)}
+.btn:disabled{filter:grayscale(1);opacity:.6}
+.card{background:rgba(255,255,255,.92);border:.5cqw solid #fff;border-radius:2.5cqw;padding:1.6cqw 2.4cqw;box-shadow:0 1cqw 3cqw rgba(20,40,120,.3);font-size:2cqw;font-weight:700}
+#ali{position:absolute;left:1.5cqw;bottom:0;width:19cqw;z-index:5;animation:bob 2s ease-in-out infinite;filter:drop-shadow(0 1cqw 1cqw rgba(0,0,0,.25))}
+@keyframes bob{50%{transform:translateY(-1.2cqw) rotate(1.5deg)}}
+[data-s=how] #ali,[data-s=cal] #ali{display:none}
+#say{position:absolute;left:3cqw;bottom:34cqw;width:22cqw;z-index:6;font-size:1.65cqw;display:none;padding:1cqw 1.3cqw;border-radius:2cqw}
+#say:after{content:"";position:absolute;left:3cqw;bottom:-1.4cqw;border:1.2cqw solid transparent;border-top-color:#fff;border-bottom:0}
+[data-s=game] #say{display:block}
+#hud{position:absolute;top:1.5cqw;left:0;right:0;display:flex;justify-content:space-between;padding:0 2cqw;font-size:2.2cqw;font-weight:800;align-items:center}
+.pill{background:#fff;border-radius:3cqw;padding:.3cqw 2cqw;box-shadow:0 .4cqw 0 #1c3fa8;border:.3cqw solid #1c3fa8}
+#bar{width:26cqw;height:2cqw;background:#fff;border-radius:2cqw;border:.3cqw solid #1c3fa8;overflow:hidden}
+#fill{height:100%;width:0;background:linear-gradient(90deg,#ffd23f,#ff7a59,#e84393);transition:width .6s}
+#q{position:absolute;top:9cqw;left:24cqw;right:4cqw;font-size:2.7cqw;line-height:1.15}
+#q small{display:block;color:#e8362f;font-size:1.9cqw}
+.tg{position:absolute;top:23cqw;width:16cqw;margin-left:-8cqw;text-align:center;transform-style:preserve-3d;animation:flt 3s ease-in-out infinite}
+.tg:nth-child(2){animation-delay:-1s}.tg:nth-child(3){animation-delay:-2s}
+@keyframes flt{0%,100%{transform:translateY(0) rotateY(-14deg)}50%{transform:translateY(-2cqw) rotateY(14deg)}}
+.orb{width:16cqw;height:16cqw;border-radius:50%;display:grid;place-items:center;font-size:8cqw;border:.5cqw solid #fff;background:radial-gradient(circle at 32% 28%,#fff 0,#fff 8%,var(--c) 40%,var(--d) 100%);box-shadow:0 1.2cqw 0 var(--d),0 2.5cqw 3cqw rgba(0,0,0,.3),0 0 3cqw var(--c)}
+.lb{margin-top:1.6cqw;background:#fff;border-radius:2cqw;padding:.4cqw .8cqw;font-size:1.75cqw;font-weight:800;line-height:1.1;box-shadow:0 .4cqw 0 #1c3fa8;border:.25cqw solid #1c3fa8}
+.tg.pop{animation:pop .7s forwards}@keyframes pop{40%{transform:scale(1.5)}100%{transform:scale(0);opacity:0}}
+.tg.sad{animation:shk .6s}@keyframes shk{25%{transform:translateX(-2cqw)}75%{transform:translateX(2cqw)}}
+.tg.sad .orb{filter:grayscale(.9)}
+.tg.hint .orb{animation:glow .5s 4 alternate}@keyframes glow{to{box-shadow:0 0 6cqw 2cqw #fff700}}
+.tg.gone{opacity:.25}
+#cur{position:absolute;width:7cqw;height:7cqw;margin:-3.5cqw;border-radius:50%;pointer-events:none;z-index:50;left:-20cqw;top:0;transition:opacity .2s,scale .1s}
+#cur:before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(#f33,#fa0,#ff0,#3d3,#0cf,#63f,#e4a,#f33);-webkit-mask:radial-gradient(circle,transparent 56%,#000 60%);mask:radial-gradient(circle,transparent 56%,#000 60%);animation:spin 2s linear infinite;filter:drop-shadow(0 0 .6cqw #fff)}
+#cur:after{content:"";position:absolute;inset:40%;border-radius:50%;background:#fff;box-shadow:0 0 1.4cqw 5px #ff0}
+#cur.p{scale:.6}#cur.lost{opacity:.35}
+#pv{position:absolute;right:2cqw;bottom:2cqw;width:14cqw;aspect-ratio:4/3;border-radius:1.5cqw;overflow:hidden;border:.4cqw solid #fff;box-shadow:0 .5cqw 2cqw rgba(0,0,0,.4);z-index:7;display:none;background:#000}
+[data-s=game] #pv,[data-s=cal] #pv{display:block}
+[data-s=cal] #pv{right:auto;bottom:auto;left:6cqw;top:16cqw;width:40cqw}
+#pv video,#pv canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);object-fit:cover}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+#cal{align-items:flex-end;padding-right:6cqw}
+#cal .card{width:42cqw;text-align:left;margin-top:1cqw}
+.ck{margin:.5cqw 0}.ck.ok{color:#14a44d}
+#star{position:absolute;right:12cqw;top:9cqw;width:11cqw;height:11cqw;font-size:8cqw;display:none;place-items:center;border-radius:50%;background:radial-gradient(circle,#fff6a0,#ffb400);box-shadow:0 0 4cqw #ffd23f;animation:flt 2s infinite}
+[data-s=cal] #star{display:grid}
+#err{display:none;color:#c4231c;margin-top:1cqw}
+#st{font-size:7cqw;letter-spacing:1cqw}
+.how li{margin:.7cqw 0;list-style:none}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important}}
+</style></head><body><div id="wrap"><div id="stage" data-s="home">
+<div id="sun"></div><div class="cl" style="top:5cqw;animation-delay:-8s"></div><div class="cl" style="top:15cqw;animation-delay:-25s;scale:.7"></div>
+
+<svg id="ali" viewBox="0 0 200 320" aria-label="Ali">
+<path d="M58 118Q14 215 26 296L174 296Q186 215 142 118Z" fill="#e63946"/>
+<rect x="68" y="212" width="27" height="76" rx="13" fill="#1d4ed8"/><rect x="105" y="212" width="27" height="76" rx="13" fill="#1d4ed8"/>
+<ellipse cx="80" cy="294" rx="22" ry="12" fill="#e63946"/><ellipse cx="120" cy="294" rx="22" ry="12" fill="#e63946"/>
+<rect x="56" y="118" width="88" height="106" rx="36" fill="#2563eb"/><rect x="56" y="194" width="88" height="13" fill="#facc15"/>
+<polygon points="100,134 108,152 127,153 113,165 118,184 100,174 82,184 87,165 73,153 92,152" fill="#facc15" stroke="#f59e0b" stroke-width="3"/>
+<rect x="30" y="128" width="27" height="62" rx="13" fill="#2563eb" transform="rotate(18 43 134)"/><circle cx="26" cy="190" r="14" fill="#c98a4b"/>
+<rect x="143" y="118" width="27" height="64" rx="13" fill="#2563eb" transform="rotate(-58 156 124)"/><circle cx="196" cy="132" r="14" fill="#c98a4b"/>
+<circle cx="52" cy="86" r="11" fill="#c98a4b"/><circle cx="148" cy="86" r="11" fill="#c98a4b"/><circle cx="100" cy="80" r="49" fill="#d39556"/>
+<path d="M52 72Q54 26 100 28Q146 26 148 72Q130 46 100 48Q70 46 52 72Z" fill="#1b1b1b"/>
+<path d="M56 72Q100 58 144 72L144 94Q100 102 56 94Z" fill="#e63946"/>
+<ellipse cx="80" cy="83" rx="12" ry="10" fill="#fff"/><ellipse cx="120" cy="83" rx="12" ry="10" fill="#fff"/>
+<circle cx="82" cy="84" r="6" fill="#1b1b1b"/><circle cx="122" cy="84" r="6" fill="#1b1b1b"/><circle cx="84" cy="81" r="2" fill="#fff"/><circle cx="124" cy="81" r="2" fill="#fff"/>
+<path d="M84 112Q100 126 116 112" fill="#fff" stroke="#7a2e1b" stroke-width="3" stroke-linecap="round"/>
+<circle cx="72" cy="108" r="7" fill="#f08a8a" opacity=".5"/><circle cx="128" cy="108" r="7" fill="#f08a8a" opacity=".5"/></svg>
+<div id="say" class="card"></div>
+
+<div id="home" class="scr on">
+ <h1>ALI:<br><em>HAND HERO</em></h1><h2 style="margin:1.5cqw 0 2cqw">TEMBAK JAWAPAN!</h2>
+ <button class="btn" id="bStart">▶ START GAME</button>
+ <button class="btn b" id="bHow">❓ HOW TO PLAY</button>
+</div>
+
+<div id="how" class="scr">
+ <h2>CARA BERMAIN</h2>
+ <div class="card how" style="width:68cqw;margin-top:1.5cqw"><ul>
+ <li>📷 Tekan <b>START GAME</b>, kemudian tekan <b>Allow / Benarkan</b> bila pelayar minta kebenaran kamera.</li>
+ <li>☝️ Tunjuk tangan kamu. <b>Jari telunjuk</b> menggerakkan bulatan warna-warni.</li>
+ <li>🎯 Halakan bulatan ke atas jawapan yang betul.</li>
+ <li>🤏 <b>Cubit</b> ibu jari dan jari telunjuk untuk TEMBAK!</li>
+ <li>⭐ Jawab 5 soalan keselamatan bencana alam dan kumpul bintang.</li>
+ <li style="font-size:1.6cqw;color:#555">Kamera tidak berfungsi? Klik ikon 🔒 / 📷 di sebelah alamat laman, pilih "Allow" untuk Camera, kemudian muat semula halaman. Atau guna tetikus (klik untuk tembak).</li></ul></div>
+ <button class="btn" id="bBack">⬅ HOME</button>
+</div>
+
+<div id="cal" class="scr">
+ <h2 style="position:absolute;top:3.5cqw;left:0;right:0">KALIBRASI KAMERA</h2>
+ <div class="card"><div class="ck" id="c1">⬜ 1. Tunjukkan tangan kamu pada kamera ✋</div>
+ <div class="ck" id="c2">⬜ 2. Gerakkan jari telunjuk ☝️</div>
+ <div class="ck" id="c3">⬜ 3. Cubit ⭐ untuk tembak 🤏</div>
+ <div id="err" class="ck"></div></div>
+ <div><button class="btn" id="bGo" disabled>MULA MAIN!</button><button class="btn b" id="bMouse" style="font-size:1.8cqw">🖱 Guna Tetikus</button></div>
+</div>
+<div id="star" data-hit="star">⭐</div>
+
+<div id="game" class="scr" style="justify-content:flex-start">
+ <div id="hud"><div class="pill">⭐ Skor: <span id="sc">0</span></div><div id="bar"><div id="fill"></div></div><div class="pill">Soalan <span id="qn">1</span>/5</div></div>
+ <div id="q" class="card"></div><div id="tgs"></div>
+</div>
+
+<div id="end" class="scr">
+ <h2>TAHNIAH, SUPERHERO!</h2><div id="st"></div>
+ <div class="card" style="margin:1cqw">Skor kamu: <b id="fs" style="font-size:3.5cqw"></b> / 100<br><span id="fm"></span></div>
+ <div><button class="btn" id="bAgain">🔁 PLAY AGAIN</button><button class="btn b" id="bHome">🏠 HOME</button></div>
+</div>
+
+<div id="pv"><video id="vid" playsinline muted></video><canvas id="ov" width="320" height="240"></canvas></div>
+<canvas id="fx" width="1280" height="720"></canvas>
+<div id="cur" class="lost"></div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id),S=$('stage'),cur=$('cur'),say=t=>{$('say').innerHTML=t};
+const Q=[
+{i:"🌊",t:"Air banjir naik! Apa Ali patut buat?",a:[["🏔️","Pergi ke tempat tinggi"],["🏊","Main dalam air banjir"],["🛋️","Tidur di rumah"]],ok:"Betul! Kita perlu pergi ke tempat yang tinggi dan selamat.",no:"Air banjir bahaya! Kita mesti pergi ke tempat tinggi."},
+{i:"🏚️",t:"Bumi bergegar! Gempa bumi! Apa patut buat?",a:[["🛡️","Berlindung bawah meja"],["🛗","Naik lif"],["🪟","Berdiri dekat tingkap"]],ok:"Hebat! Berlindung di bawah meja dan lindungi kepala.",no:"Jangan dekat tingkap atau naik lif. Berlindung bawah meja!"},
+{i:"🌋",t:"Gunung berapi meletus! Abu berterbangan. Apa patut buat?",a:[["🔭","Pergi dekat untuk tengok"],["😷","Pakai pelitup muka"],["⚽","Main bola di luar"]],ok:"Pandai! Pelitup muka melindungi kita daripada abu.",no:"Abu gunung berapi bahaya. Pakai pelitup muka dan duduk di dalam."},
+{i:"⛰️",t:"Hujan lebat. Tanah bukit mula bergerak! Apa patut buat?",a:[["⛺","Berkhemah tepi bukit"],["🛝","Main di bawah bukit"],["🚶","Jauhi kawasan bukit"]],ok:"Bagus! Jauhi bukit supaya selamat daripada tanah runtuh.",no:"Tanah runtuh bahaya! Kita mesti menjauhi kawasan bukit."},
+{i:"🔥",t:"Ada asap dan api di hutan! Apa patut buat?",a:[["🔥","Main mancis"],["📞","Beritahu orang dewasa, telefon 999"],["🚪","Sorok dalam almari"]],ok:"Hebat! Beritahu orang dewasa dan telefon 999.",no:"Jangan main api. Beritahu orang dewasa dan telefon 999."}];
+const COL=[["#ff8a5c","#c93c1a"],["#5cc8ff","#1b6ccf"],["#b07cff","#6a2fc9"]];
+let qi=0,score=0,lock=true,camOK=false,mouse=false,fx=.5,fy=.5,hand=false,lastSeen=0,pinched=false,lastFire=0,seen=false,moved=0,calDone=false,hands,stream,order=[];
+/* sound */
+let AC;function snd(f,d=.15,t='sine',s=0){try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.setValueAtTime(f,AC.currentTime+s);o.frequency.exponentialRampToValueAtTime(f*1.8,AC.currentTime+s+d);g.gain.setValueAtTime(.15,AC.currentTime+s);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+s+d);o.connect(g).connect(AC.destination);o.start(AC.currentTime+s);o.stop(AC.currentTime+s+d)}catch(e){}}
+const win=()=>[523,659,784,1047].forEach((f,i)=>snd(f,.2,'triangle',i*.09)),lose=()=>{snd(300,.3,'sine');snd(220,.3,'sine',.15)};
+/* screens */
+function go(s){S.dataset.s=s;document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id===s));
+ if(s==='home')say('');}
+$('bHow').onclick=()=>go('how');$('bBack').onclick=$('bHome').onclick=()=>go('home');
+$('bStart').onclick=async()=>{go('cal');resetCal();await startCam()};
+$('bAgain').onclick=startGame;$('bGo').onclick=startGame;
+$('bMouse').onclick=()=>{mouse=true;camOK=false;$('err').style.display='none';doneCal()};
+function resetCal(){calDone=false;seen=false;moved=0;['c1','c2','c3'].forEach((c,i)=>{$(c).className='ck';$(c).textContent=$(c).textContent.replace('✅','⬜')});$('bGo').disabled=true;$('err').style.display='none'}
+function tick(id){const e=$(id);e.classList.add('ok');e.textContent=e.textContent.replace('⬜','✅')}
+function doneCal(){calDone=true;tick('c1');tick('c2');tick('c3');$('bGo').disabled=false;snd(660,.2);win()}
+/* camera + MediaPipe */
+async function startCam(){
+ if(camOK)return;
+ try{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw{name:'NoAPI'};
+  if(typeof Hands==='undefined')throw{name:'NoLib'};
+  stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
+  const v=$('vid');v.srcObject=stream;await v.play();
+  hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.6,minTrackingConfidence:.5});
+  hands.onResults(onRes);await hands.initialize();camOK=true;mouse=false;loop();
+ }catch(e){
+  const m={NotAllowedError:'Kamera disekat. Klik ikon 🔒 di sebelah alamat laman, pilih "Allow" untuk Camera, kemudian muat semula halaman.',NotFoundError:'Kamera tidak dijumpai. Sambungkan kamera web.',NotReadableError:'Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi itu dan cuba lagi.',NoLib:'Pustaka pengesan tangan tidak dapat dimuat. Semak sambungan internet.',NoAPI:'Pelayar ini tidak menyokong kamera. Guna Chrome, Edge atau Safari terkini (HTTPS atau localhost).'}[e.name]||'Kamera tidak dapat dimulakan ('+(e.message||e.name)+').';
+  const er=$('err');er.style.display='block';er.textContent='⚠️ '+m+' Anda boleh tekan "Guna Tetikus".';mouse=true;
+ }}
+let busy=false;
+async function loop(){const v=$('vid');if(v.readyState>=2&&!busy){busy=true;try{await hands.send({image:v})}catch(e){}busy=false}requestAnimationFrame(loop)}
+const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),cl=x=>Math.max(0,Math.min(1,x));
+const oc=$('ov').getContext('2d');
+function onRes(r){
+ oc.clearRect(0,0,320,240);const L=r.multiHandLandmarks&&r.multiHandLandmarks[0];
+ if(!L){hand=false;return}
+ hand=true;lastSeen=performance.now();
+ [[0,5],[5,9],[9,13],[13,17],[17,0],[0,1],[1,2],[2,3],[3,4],[5,6],[6,7],[7,8]].forEach(([a,b])=>{oc.strokeStyle='#7dff9b';oc.lineWidth=3;oc.beginPath();oc.moveTo(L[a].x*320,L[a].y*240);oc.lineTo(L[b].x*320,L[b].y*240);oc.stroke()});
+ [4,8].forEach(i=>{oc.fillStyle=i==8?'#ff0':'#f0f';oc.beginPath();oc.arc(L[i].x*320,L[i].y*240,6,0,7);oc.fill()});
+ const tx=cl((1-L[8].x-.12)/.76),ty=cl((L[8].y-.08)/.7);
+ if(Math.hypot(tx-fx,ty-fy)>.01&&S.dataset.s==='cal'&&seen)moved++;
+ fx+=(tx-fx)*.5;fy+=(ty-fy)*.5;
+ const ratio=D(L[4],L[8])/D(L[0],L[9]);
+ if(!pinched&&ratio<.3){pinched=true;fire()}else if(pinched&&ratio>.5)pinched=false;
+ cur.classList.toggle('p',pinched);
+ if(S.dataset.s==='cal'&&!calDone){seen=true;tick('c1');if(moved>25)tick('c2')}
+}
+/* mouse fallback */
+S.addEventListener('mousemove',e=>{if(camOK)return;const r=S.getBoundingClientRect();fx=(e.clientX-r.left)/r.width;fy=(e.clientY-r.top)/r.height});
+S.addEventListener('mousedown',e=>{if(!camOK){const r=S.getBoundingClientRect();fx=(e.clientX-r.left)/r.width;fy=(e.clientY-r.top)/r.height;fire(true)}});
+function pos(){const r=S.getBoundingClientRect();return[r.left+fx*r.width,r.top+fy*r.height,r]}
+function fire(m){
+ const n=performance.now();if(n-lastFire<450)return;lastFire=n;
+ const[x,y,r]=pos(),el=document.elementFromPoint(x,y);snd(500,.12,'square');
+ const b=el&&el.closest('button');
+ if(b&&!b.disabled){if(!m)b.click();else if(0)0;return}
+ const s=S.dataset.s;
+ if(s==='cal'&&el&&el.closest('[data-hit=star]')&&!calDone){burst((x-r.left)/r.width*1280,(y-r.top)/r.height*720);doneCal();return}
+ const t=el&&el.closest('.tg');
+ if(s==='game'&&!lock&&t)answer(+t.dataset.i,t);
+ else beams.push({x1:(x-r.left)/r.width*1280,y1:(y-r.top)/r.height*720,x2:(x-r.left)/r.width*1280,y2:(y-r.top)/r.height*720,l:.5}),spark((x-r.left)/r.width*1280,(y-r.top)/r.height*720,10);
+}
+/* game */
+function startGame(){qi=0;score=0;go('game');$('sc').textContent=0;loadQ()}
+function loadQ(){
+ lock=false;const q=Q[qi];order=[0,1,2].sort(()=>Math.random()-.5);
+ $('qn').textContent=qi+1;$('fill').style.width=(qi/5*100)+'%';
+ $('q').innerHTML=`<small>${q.i}</small>${q.t}`;
+ const ci=[0,0,0,0,0];const cor=[0,1,0,2,1][qi];
+ // answer index of correct item
+ $('tgs').innerHTML=order.map((k,p)=>{const a=q.a[k];return `<div class="tg" data-i="${k}" style="left:${p*22+42}cqw;--c:${COL[p][0]};--d:${COL[p][1]}"><div class="orb">${a[0]}</div><div class="lb">${a[1]}</div></div>`}).join('');
+ say('Pilih jawapan yang betul! Cubit untuk tembak! 🤏');
+}
+function answer(k,el){
+ lock=true;const q=Q[qi],okIdx=[0,0,1,2,1][qi],r=S.getBoundingClientRect(),b=el.getBoundingClientRect();
+ const cx=(b.left+b.width/2-r.left)/r.width*1280,cy=(b.top+b.height*.3-r.top)/r.height*720;
+ beams.push({x1:250,y1:430,x2:cx,y2:cy,l:1});
+ if(k===okIdx){
+  setTimeout(()=>{burst(cx,cy);el.classList.add('pop');win()},180);
+  score+=20;$('sc').textContent=score;say('⭐ +20 mata! '+q.ok);
+ }else{
+  el.classList.add('sad');lose();spark(cx,cy,12);
+  document.querySelectorAll('.tg').forEach(t=>{if(+t.dataset.i===okIdx)t.classList.add('hint');else if(t!==el)t.classList.add('gone')});
+  say('Tidak mengapa! '+q.no);
+ }
+ setTimeout(()=>{qi++;qi>=5?finish():loadQ()},4200);
+}
+function finish(){
+ go('end');$('fill').style.width='100%';const st=score>=100?3:score>=60?2:1;
+ $('st').textContent='⭐'.repeat(st)+'☆'.repeat(3-st);$('fs').textContent=score;
+ $('fm').textContent=score>=80?'Kamu superhero keselamatan yang hebat!':'Bagus! Mari main lagi dan jadi lebih hebat!';
+ say('');let n=0;const iv=setInterval(()=>{burst(200+Math.random()*880,100+Math.random()*350);if(++n>8)clearInterval(iv)},350);win();
+}
+/* effects */
+let P=[],beams=[],rings=[];const c2=$('fx').getContext('2d');
+function spark(x,y,n){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=1+Math.random()*4;P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1,c:`hsl(${Math.random()*360},100%,65%)`,k:0,r:4+Math.random()*5,rot:0})}}
+function burst(x,y){for(let i=0;i<90;i++){const a=Math.random()*6.28,s=3+Math.random()*11;P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,l:1,c:`hsl(${Math.random()*360},100%,65%)`,k:i%3==0,r:8+Math.random()*12,rot:Math.random()*6})}rings.push({x,y,r:10,l:1})}
+function draw(){
+ c2.clearRect(0,0,1280,720);
+ beams.forEach(b=>{b.l-=.05;['#ff3d81','#ffd23f','#fff'].forEach((c,i)=>{c2.strokeStyle=c;c2.lineWidth=(28-i*9)*Math.max(b.l,0);c2.lineCap='round';c2.shadowColor=c;c2.shadowBlur=20;c2.beginPath();c2.moveTo(b.x1,b.y1);c2.lineTo(b.x2,b.y2);c2.stroke()})});
+ c2.shadowBlur=0;beams=beams.filter(b=>b.l>0);
+ rings.forEach(r=>{r.r+=18;r.l-=.04;c2.strokeStyle=`rgba(255,240,120,${r.l})`;c2.lineWidth=12*r.l;c2.beginPath();c2.arc(r.x,r.y,r.r,0,7);c2.stroke()});rings=rings.filter(r=>r.l>0);
+ if(hand&&Math.random()<.5&&S.dataset.s!=='home')spark(fx*1280,fy*720,1);
+ P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.l-=.02;p.rot+=.1;c2.globalAlpha=Math.max(p.l,0);c2.fillStyle=p.c;c2.save();c2.translate(p.x,p.y);
+  if(p.k){c2.rotate(p.rot);c2.beginPath();c2.moveTo(0,-p.r);c2.lineTo(p.r*.6,0);c2.lineTo(0,p.r);c2.lineTo(-p.r*.6,0);c2.closePath();c2.fill();c2.strokeStyle='#fff';c2.lineWidth=2;c2.stroke()}
+  else{c2.beginPath();c2.arc(0,0,p.r*.6,0,7);c2.fill()}c2.restore()});
+ c2.globalAlpha=1;P=P.filter(p=>p.l>0);
+ cur.style.left=fx*100+'%';cur.style.top=fy*100+'%';
+ const lost=camOK&&(performance.now()-lastSeen>800);cur.classList.toggle('lost',lost);
+ requestAnimationFrame(draw);
+}
+draw();
+</script></body></html>
